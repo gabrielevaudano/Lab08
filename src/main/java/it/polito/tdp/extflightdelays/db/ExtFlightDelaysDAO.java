@@ -7,10 +7,14 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 import it.polito.tdp.extflightdelays.model.Airline;
 import it.polito.tdp.extflightdelays.model.Airport;
+import it.polito.tdp.extflightdelays.model.Connectio;
+import it.polito.tdp.extflightdelays.model.ConnectionMap;
 import it.polito.tdp.extflightdelays.model.Flight;
+
 
 public class ExtFlightDelaysDAO {
 
@@ -33,7 +37,7 @@ public class ExtFlightDelaysDAO {
 		} catch (SQLException e) {
 			e.printStackTrace();
 			System.out.println("Errore connessione al database");
-			throw new RuntimeException("Error Connection Database");
+			throw new RuntimeException("Error Connectio Database");
 		}
 	}
 
@@ -59,7 +63,7 @@ public class ExtFlightDelaysDAO {
 		} catch (SQLException e) {
 			e.printStackTrace();
 			System.out.println("Errore connessione al database");
-			throw new RuntimeException("Error Connection Database");
+			throw new RuntimeException("Error Connectio Database");
 		}
 	}
 
@@ -88,7 +92,34 @@ public class ExtFlightDelaysDAO {
 		} catch (SQLException e) {
 			e.printStackTrace();
 			System.out.println("Errore connessione al database");
-			throw new RuntimeException("Error Connection Database");
+			throw new RuntimeException("Error Connectio Database");
+		}
+	}
+	
+	public void loadConnections(Map<Integer, Airport> airportMap, ConnectionMap connectionMap) {
+		String sql = "SELECT origin_airport_id, destination_airport_id, AVG(distance) AS avg_distance FROM flights "
+				+ " GROUP BY origin_airport_id, destination_airport_id ";
+
+		try {
+			Connection conn = ConnectDB.getConnection();
+			PreparedStatement st = conn.prepareStatement(sql);
+			ResultSet rs = st.executeQuery();
+
+			while (rs.next()) {
+				Airport a1 = airportMap.get(rs.getInt("origin_airport_id"));
+				Airport a2 = airportMap.get(rs.getInt("destination_airport_id"));
+				Double media = rs.getDouble("avg_distance");
+				Connectio connection = new Connectio(a1, a2, media);
+				
+				connectionMap.add(connection);
+			}
+
+			conn.close();
+
+		} catch (SQLException e) {
+			e.printStackTrace();
+			System.out.println("Errore connessione al database");
+			throw new RuntimeException("Error Connectio Database");
 		}
 	}
 }
